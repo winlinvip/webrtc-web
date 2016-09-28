@@ -1,6 +1,6 @@
 # webrtc-web2
 
-Simple examples for https://codelabs.developers.google.com/codelabs/webrtc-web
+Simple examples for https://github.com/googlecodelabs/webrtc-web
 
 ## Usage
 
