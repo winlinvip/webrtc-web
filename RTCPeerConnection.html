@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>WebRTC</title>
+    <link rel="stylesheet" href="css/main.css" />
+</head>
+
+<body>
+    <h1>Chrome only~</h1>
+    <video id="local" autoplay controls title="local video"></video>
+    <video id="remote" autoplay controls title="remote video"></video>
+</body>
+<script>
+    // https://codelabs.developers.google.com/codelabs/webrtc-web/#4
+    var lv = document.getElementById("local");
+
+    navigator.webkitGetUserMedia({
+        video:true,audio:false
+    },function(stream){
+        lv.src = window.URL.createObjectURL(stream);
+        console.log("local stream " + lv.src);
+
+        rtcCall(stream);
+    }, function(error){
+        console.error(error);
+    });
+
+    function rtcCall(localStream) {
+        var pc1 = new window.webkitRTCPeerConnection(null);
+        var pc2 = new window.webkitRTCPeerConnection(null);
+
+        pc1.onicecandidate = function(e) {
+            e.candidate && pc2.addIceCandidate(new window.RTCIceCandidate(e.candidate));
+        };
+        pc2.onicecandidate = function(e) {
+            e.candidate && pc1.addIceCandidate(new window.RTCIceCandidate(e.candidate));
+        };
+
+        pc2.onaddstream = function(e) {
+            var rv = document.getElementById("remote");
+            rv.src = window.URL.createObjectURL(e.stream);
+            console.log("remote stream " + rv.src);
+        };
+
+        pc1.addStream(localStream);
+        pc1.createOffer(function(desc){
+            pc1.setLocalDescription(desc);
+            pc2.setRemoteDescription(desc);
+
+            // Since the 'remote' side has no media stream we need
+            // to pass in the right constraints in order for it to
+            // accept the incoming offer of audio and video.
+            pc2.createAnswer(function(desc){
+                pc2.setLocalDescription(desc);
+                pc1.setRemoteDescription(desc);
+            }, function(error){
+                console.error(error);
+            });
+        }, function(error){
+            console.error(error);
+        });
+    }
+</script>
+
+</html>
