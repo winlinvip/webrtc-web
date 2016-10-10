@@ -1,6 +1,6 @@
 # webrtc-web
 
-Simple examples for https://github.com/googlecodelabs/webrtc-web
+Simple examples for https://github.com/googlecodelabs/webrtc-web over Chrome.
 
 ## Usage
 
