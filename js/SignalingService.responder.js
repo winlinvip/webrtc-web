@@ -2,10 +2,14 @@
 
 // https://codelabs.developers.google.com/codelabs/webrtc-web/#4
 var rv = document.getElementById("remote");
-var api = "http://localhost:8888";
+var api = "";
 
 $("#start").click(function(){
-    api = "http://" + document.getElementById("api").value;
+    var napi = document.getElementById("api").value;
+    if (napi != "/") {
+        api = "http://" + napi;
+    }
+
     callInitiator();
 });
 
@@ -23,7 +27,7 @@ function callInitiator() {
     };
     var transmitResponderCandidate = function(candidate) {
         candidate = JSON.stringify(escapeCandicate(candidate));
-        $.ajax({type:"POST", async:false, url:api+"/api/rcandidates", contentType:"application/json", data:candidate});
+        $.ajax({type:"POST", async:false, url:api+"/api/webrtc/rcandidates", contentType:"application/json", data:candidate});
     };
 
     // Render the remote initiator stream.
@@ -33,7 +37,7 @@ function callInitiator() {
     };
 
     // Query the offer of initiator from signaling server.
-    $.ajax({type:"GET", async:false, url:api+"/api/offer", contentType:"application/json", success:function(data){
+    $.ajax({type:"GET", async:false, url:api+"/api/webrtc/offer", contentType:"application/json", success:function(data){
         var offer = unescapeOffer(JSON.parse(JSON.parse(data)[0]));
 
         pcRemote.setRemoteDescription(offer);
@@ -57,14 +61,14 @@ function callInitiator() {
     // Transmit the answer to initiator.
     var transmitAnswer = function(answer) {
         answer = JSON.stringify(escapeOffer(answer));
-        $.ajax({type:"POST", async:false, url:api+"/api/answer", contentType:"application/json", data:answer});
+        $.ajax({type:"POST", async:false, url:api+"/api/webrtc/answer", contentType:"application/json", data:answer});
 
         requestCandidates();
     };
 
     // Request the candidates of initiator.
     var requestCandidates = function() {
-        $.ajax({type:"GET", async:false, url:api+"/api/icandidates", contentType:"application/json", success:function(data){
+        $.ajax({type:"GET", async:false, url:api+"/api/webrtc/icandidates", contentType:"application/json", success:function(data){
             data = JSON.parse(data) || [];
             for (var i = 0; i < data.length; i++) {
                 var candidate = unescapeCandicate(JSON.parse(data[i]));

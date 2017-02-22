@@ -2,10 +2,13 @@
 
 // https://codelabs.developers.google.com/codelabs/webrtc-web/#4
 var lv = document.getElementById("local");
-var api = "http://localhost:8888";
+var api = "";
 
 $("#start").click(function(){
-    api = "http://" + document.getElementById("api").value;
+    var napi = document.getElementById("api").value;
+    if (napi != "/") {
+        api = "http://" + napi;
+    }
 
     navigator.webkitGetUserMedia({
         video:true,audio:false
@@ -33,7 +36,7 @@ function shareLocalStream(localStream) {
     };
     var transmitInitiatorCandidate = function(candidate) {
         candidate = JSON.stringify(escapeCandicate(candidate));
-        $.ajax({type:"POST", async:false, url:api+"/api/icandidates", contentType:"application/json", data:candidate});
+        $.ajax({type:"POST", async:false, url:api+"/api/webrtc/icandidates", contentType:"application/json", data:candidate});
     };
 
     // Add the stream to shared peer connection.
@@ -54,7 +57,7 @@ function shareLocalStream(localStream) {
     // Transmit initiator offer to signaling server.
     var transmitOffer = function(offer) {
         offer = JSON.stringify(escapeOffer(offer));
-        $.ajax({type:"POST", async:false, url:api+"/api/offer", contentType:"application/json", data:offer});
+        $.ajax({type:"POST", async:false, url:api+"/api/webrtc/offer", contentType:"application/json", data:offer});
     };
 
     // Wait for responder to reply the answer.
@@ -66,7 +69,7 @@ function shareLocalStream(localStream) {
         requestCandidates();
     };
     var waitAnswer = function(){
-        $.ajax({type:"GET", async:false, url:api+"/api/answer", contentType:"application/json", success:function(data){
+        $.ajax({type:"GET", async:false, url:api+"/api/webrtc/answer", contentType:"application/json", success:function(data){
             var answer = unescapeOffer(JSON.parse(JSON.parse(data)[0]));
             onLocalGotAnswer(answer);
         }, error:function(){
@@ -78,7 +81,7 @@ function shareLocalStream(localStream) {
 
     // When got answer from responder, request its candidates.
     var requestCandidates = function() {
-        $.ajax({type:"GET", async:false, url:api+"/api/rcandidates", contentType:"application/json", success:function(data){
+        $.ajax({type:"GET", async:false, url:api+"/api/webrtc/rcandidates", contentType:"application/json", success:function(data){
             data = JSON.parse(data) || [];
             for (var i = 0; i < data.length; i++) {
                 var candidate = unescapeCandicate(JSON.parse(data[i]));
