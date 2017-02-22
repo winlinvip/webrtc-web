@@ -2,16 +2,21 @@
 
 // https://codelabs.developers.google.com/codelabs/webrtc-web/#4
 var lv = document.getElementById("local");
+var api = "http://localhost:8888";
 
-navigator.webkitGetUserMedia({
-    video:true,audio:false
-},function(stream){
-    lv.src = window.URL.createObjectURL(stream);
-    console.log("[navigator.webkitGetUserMedia] lv.src=localStream " + lv.src);
+$("#start").click(function(){
+    api = "http://" + document.getElementById("api").value;
 
-    shareLocalStream(stream);
-}, function(error){
-    console.error(error);
+    navigator.webkitGetUserMedia({
+        video:true,audio:false
+    },function(stream){
+        lv.src = window.URL.createObjectURL(stream);
+        console.log("[navigator.webkitGetUserMedia] lv.src=localStream " + lv.src);
+
+        shareLocalStream(stream);
+    }, function(error){
+        console.error(error);
+    });
 });
 
 function shareLocalStream(localStream) {
@@ -28,7 +33,7 @@ function shareLocalStream(localStream) {
     };
     var transmitInitiatorCandidate = function(candidate) {
         candidate = JSON.stringify(escapeCandicate(candidate));
-        $.ajax({type:"POST", async:false, url:"/api/icandidates", contentType:"application/json", data:candidate});
+        $.ajax({type:"POST", async:false, url:api+"/api/icandidates", contentType:"application/json", data:candidate});
     };
 
     // Add the stream to shared peer connection.
@@ -49,7 +54,7 @@ function shareLocalStream(localStream) {
     // Transmit initiator offer to signaling server.
     var transmitOffer = function(offer) {
         offer = JSON.stringify(escapeOffer(offer));
-        $.ajax({type:"POST", async:false, url:"/api/offer", contentType:"application/json", data:offer});
+        $.ajax({type:"POST", async:false, url:api+"/api/offer", contentType:"application/json", data:offer});
     };
 
     // Wait for responder to reply the answer.
@@ -61,7 +66,7 @@ function shareLocalStream(localStream) {
         requestCandidates();
     };
     var waitAnswer = function(){
-        $.ajax({type:"GET", async:false, url:"/api/answer", contentType:"application/json", success:function(data){
+        $.ajax({type:"GET", async:false, url:api+"/api/answer", contentType:"application/json", success:function(data){
             var answer = unescapeOffer(JSON.parse(JSON.parse(data)[0]));
             onLocalGotAnswer(answer);
         }, error:function(){
@@ -73,7 +78,7 @@ function shareLocalStream(localStream) {
 
     // When got answer from responder, request its candidates.
     var requestCandidates = function() {
-        $.ajax({type:"GET", async:false, url:"/api/rcandidates", contentType:"application/json", success:function(data){
+        $.ajax({type:"GET", async:false, url:api+"/api/rcandidates", contentType:"application/json", success:function(data){
             data = JSON.parse(data) || [];
             for (var i = 0; i < data.length; i++) {
                 var candidate = unescapeCandicate(JSON.parse(data[i]));
