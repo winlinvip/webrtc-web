@@ -14,14 +14,6 @@ navigator.webkitGetUserMedia({
     console.error(error);
 });
 
-function copyObject(obj) {
-    var cp = {};
-    for (var key in obj) {
-        cp[key] = obj[key];
-    }
-    return cp;
-}
-
 function rtcCall(localStream) {
     // local peer connection setup.
     var pcLocal = new window.webkitRTCPeerConnection(null);
@@ -99,7 +91,15 @@ function rtcCall(localStream) {
     };
     var onLocalGotAnswer = function(answer) {
         pcLocal.setRemoteDescription(answer);
-        console.log("[pcRemote.createAnswer] Got answer " + answer.sdp.length + "B sdp as bellow:");
+        console.log("[onLocalGotAnswer] Got answer " + answer.sdp.length + "B sdp as bellow:");
         console.log(answer);
     };
+}
+
+function copyObject(obj) {
+    var cp = {};
+    for (var key in obj) {
+        cp[key] = obj[key];
+    }
+    return cp;
 }
