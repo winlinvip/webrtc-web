@@ -26,15 +26,26 @@ function rtcCall(localStream) {
     // local peer connection setup.
     var pcLocal = new window.webkitRTCPeerConnection(null);
     pcLocal.onicecandidate = function(e) {
-        e.candidate && console.log("[pcLocal.onicecandidate] " + e.candidate.candidate);
-        e.candidate && pcRemote.addIceCandidate(new window.RTCIceCandidate(e.candidate));
+        if (!e.candidate) {
+            return;
+        }
+        console.log("[pcLocal.onicecandidate] " + e.candidate.candidate);
+        transmitCandidateTo(e.candidate, pcRemote);
     };
 
     // remote peer connection setup.
     var pcRemote = new window.webkitRTCPeerConnection(null);
     pcRemote.onicecandidate = function(e) {
-        e.candidate && console.log("[pcRemote.onicecandidate] " + e.candidate.candidate);
-        e.candidate && pcLocal.addIceCandidate(new window.RTCIceCandidate(e.candidate));
+        if (!e.candidate) {
+            return;
+        }
+        console.log("[pcRemote.onicecandidate] " + e.candidate.candidate);
+        transmitCandidateTo(e.candidate, pcLocal);
+    };
+
+    var transmitCandidateTo = function(candidate, target) {
+        candidate = copyObject(candidate); // To demonstrate candidate transmit over network in JSON.
+        target.addIceCandidate(new window.RTCIceCandidate(candidate));
     };
 
     pcRemote.onaddstream = function(e) {
