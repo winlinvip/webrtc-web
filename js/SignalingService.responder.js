@@ -1,6 +1,6 @@
 'use strict';
 
-// https://codelabs.developers.google.com/codelabs/webrtc-web/#4
+// https://codelabs.developers.google.com/codelabs/webrtc-web/#6
 var rv = document.getElementById("remote");
 var api = "";
 
