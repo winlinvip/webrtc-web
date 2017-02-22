@@ -34,6 +34,13 @@ func main() {
 			content := string(b)
 			fmt.Println("Update", key, content)
 
+			if key == "offer" {
+				cache = make(map[string][]string)
+			}
+			if key == "answer" {
+				cache["rcandidates"] = nil
+			}
+
 			values,_ := cache[key]
 			if key == "offer" || key == "answer" {
 				cache[key] = []string { content }

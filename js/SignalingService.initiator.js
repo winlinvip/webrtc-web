@@ -15,8 +15,10 @@ navigator.webkitGetUserMedia({
 });
 
 function shareLocalStream(localStream) {
-    // local peer connection setup.
+    // Use a peer connection to share stream to responder.
     var pcLocal = new window.webkitRTCPeerConnection(null);
+
+    // Transmit initiator candidates info to signaling server.
     pcLocal.onicecandidate = function(e) {
         if (!e.candidate) {
             return;
@@ -24,16 +26,16 @@ function shareLocalStream(localStream) {
         console.log("[pcLocal.onicecandidate] " + e.candidate.candidate);
         transmitInitiatorCandidate(e.candidate);
     };
-
     var transmitInitiatorCandidate = function(candidate) {
         candidate = JSON.stringify(escapeCandicate(candidate));
         $.ajax({type:"POST", async:false, url:"/api/icandidates", contentType:"application/json", data:candidate});
     };
 
-    // trigger connection between local and remote peer.
+    // Add the stream to shared peer connection.
     pcLocal.addStream(localStream);
     console.log("[pcLocal.addStream] add localStream to peer connection");
 
+    // Create a offer so that the responder can answer.
     pcLocal.createOffer(function(offer){
         pcLocal.setLocalDescription(offer); // trigger pcLocal.onicecandidate().
         console.log("[pcLocal.createOffer] Request with offer " + offer.sdp.length + "B sdp as bellow:");
@@ -44,12 +46,13 @@ function shareLocalStream(localStream) {
         console.error(error);
     });
 
-    // Local transmit offer to remote.
+    // Transmit initiator offer to signaling server.
     var transmitOffer = function(offer) {
         offer = JSON.stringify(escapeOffer(offer));
         $.ajax({type:"POST", async:false, url:"/api/offer", contentType:"application/json", data:offer});
     };
 
+    // Wait for responder to reply the answer.
     var onLocalGotAnswer = function(answer) {
         pcLocal.setRemoteDescription(answer);
         console.log("[onLocalGotAnswer] Got answer " + answer.sdp.length + "B sdp as bellow:");
@@ -68,13 +71,14 @@ function shareLocalStream(localStream) {
     };
     setTimeout(waitAnswer, 0);
 
+    // When got answer from responder, request its candidates.
     var requestCandidates = function() {
         $.ajax({type:"GET", async:false, url:"/api/rcandidates", contentType:"application/json", success:function(data){
-            data = JSON.parse(data);
+            data = JSON.parse(data) || [];
             for (var i = 0; i < data.length; i++) {
                 var candidate = unescapeCandicate(JSON.parse(data[i]));
                 pcLocal.addIceCandidate(new window.RTCIceCandidate(candidate));
-                console.log("[requestCandidates] Got responder candidate " + candidate);
+                console.log("[requestCandidates] Got responder candidate " + JSON.stringify(candidate));
             }
         }, error:function(){
             console.log("[requestCandidates] No responder candidates, wait for a while.");
