@@ -37,10 +37,10 @@ $("#start").click(function(){
                 console.log("[conn.onicecandidate] " + e.candidate.candidate);
 
                 // Transmit initiator candidates info to signaling server.
-                var data = JSON.stringify(escapeCandicate(e.candidate.candidate));
+                var data = JSON.stringify(escapeCandicate(e.candidate));
                 $.ajax({
                     type:"POST", async:true, url:api+"/api/webrtc/icandidates", contentType:"application/json", data:data,
-                    success: function(){ resolve(e.candidate.candidate); }, error: function(xhr,err) { reject(err); }
+                    success: function(){ resolve(data); }, error: function(xhr,err) { reject(err); }
                 });
             };
         }), new Promise(function(resolve, reject){
@@ -59,7 +59,7 @@ $("#start").click(function(){
                 reject(error);
             });
         })]).then(function([candidate, offer]){
-            waitResponder(conn);
+            setTimeout(waitResponder, 5000, conn);
         });
     });
 });

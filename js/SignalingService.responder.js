@@ -23,63 +23,71 @@ $("#start").click(function(){
 });
 
 function callInitiator(pcRemote, api) {
-    // Transmit the responder candidates to signaling server.
-    pcRemote.onicecandidate = function(e) {
-        if (!e.candidate) {
-            return;
-        }
-        console.log("[pcRemote.onicecandidate] " + e.candidate.candidate);
-        transmitResponderCandidate(e.candidate);
-    };
-    var transmitResponderCandidate = function(candidate) {
-        candidate = JSON.stringify(escapeCandicate(candidate));
-        $.ajax({type:"POST", async:false, url:api+"/api/webrtc/rcandidates", contentType:"application/json", data:candidate});
-    };
-
-    // Query the offer of initiator from signaling server.
-    $.ajax({type:"GET", async:false, url:api+"/api/webrtc/offer", contentType:"application/json", success:function(data){
-        var offer = unescapeOffer(JSON.parse(JSON.parse(data)[0]));
-
-        pcRemote.setRemoteDescription(offer);
+    Promise.all([new Promise(function(resolve, reject){
+        // Request the candidates of initiator.
+        $.ajax({
+            type:"GET", async:true, url:api+"/api/webrtc/icandidates", contentType:"application/json",
+            success:function(data){
+                data = JSON.parse(data) || [];
+                resolve(data);
+            }, error:function(xhr,err){
+                reject(err);
+            }
+        });
+    }), new Promise(function(resolve, reject){
+        // Query the offer of initiator from signaling server.
+        $.ajax({
+            type:"GET", async:true, url:api+"/api/webrtc/offer", contentType:"application/json",
+            success:function(data){
+                var offer = unescapeOffer(JSON.parse(JSON.parse(data)[0]));
+                resolve(offer);
+            },
+            error: function(xhr, err) {
+                reject(err);
+            }
+        });
+    })]).then(function([candidates,offer]){
+        // once got the peer offer(SDP), we can generate our answer(SDP).
+        pcRemote.setRemoteDescription(offer); // trigger pcRemote.onaddstream
         console.log("[onRemoteGotOffer] Got offer " + offer.sdp.length + "B sdp as bellow:");
         console.log(offer);
 
-        // Since the 'remote' side has no media stream we need
-        // to pass in the right constraints in order for it to
-        // accept the incoming offer of audio and video.
-        pcRemote.createAnswer(function(answer){
-            pcRemote.setLocalDescription(answer); // trigger pcRemote.onicecandiate().
-            console.log("[pcRemote.createAnswer] Response offer=" + offer.sdp.length + "B answer " + answer.sdp.length + "B sdp as bellow:");
-            console.log(answer);
+        // before addIceCandidate, we must setRemoteDescription
+        for (var i = 0; i < candidates.length; i++) {
+            var candidate = unescapeCandicate(JSON.parse(candidates[i]));
+            pcRemote.addIceCandidate(new window.RTCIceCandidate(candidate));
+            console.log("[requestCandidates] Got initiator candidate " + JSON.stringify(candidate));
+        }
 
-            transmitAnswer(answer);
-        }, function(error){
-            console.error(error);
+        Promise.all([new Promise(function(resolve, reject){
+            // Since the 'remote' side has no media stream we need
+            // to pass in the right constraints in order for it to
+            // accept the incoming offer of audio and video.
+            pcRemote.createAnswer(function(answer){
+                pcRemote.setLocalDescription(answer); // trigger pcRemote.onicecandidate().
+                console.log("[pcRemote.createAnswer] answer " + answer.sdp.length + "B sdp as bellow:");
+                console.log(answer);
+
+                resolve(answer);
+            }, function(error){
+                reject(error);
+            });
+        }), new Promise(function(resolve, reject){
+            // Transmit the responder candidates to signaling server.
+            pcRemote.onicecandidate = function(e) {
+                if (!e.candidate) {
+                    return;
+                }
+                resolve(e.candidate);
+            };
+        })]).then(function([answer,candidate]){
+            var data = JSON.stringify(escapeOffer(answer));
+            $.ajax({type:"POST", async:true, url:api+"/api/webrtc/answer", contentType:"application/json", data:data});
+
+            data = JSON.stringify(escapeCandicate(candidate));
+            $.ajax({type:"POST", async:true, url:api+"/api/webrtc/rcandidates", contentType:"application/json", data:data});
         });
-    }});
-
-    // Transmit the answer to initiator.
-    var transmitAnswer = function(answer) {
-        answer = JSON.stringify(escapeOffer(answer));
-        $.ajax({type:"POST", async:false, url:api+"/api/webrtc/answer", contentType:"application/json", data:answer});
-
-        requestCandidates();
-    };
-
-    // Request the candidates of initiator.
-    var requestCandidates = function() {
-        $.ajax({type:"GET", async:false, url:api+"/api/webrtc/icandidates", contentType:"application/json", success:function(data){
-            data = JSON.parse(data) || [];
-            for (var i = 0; i < data.length; i++) {
-                var candidate = unescapeCandicate(JSON.parse(data[i]));
-                pcRemote.addIceCandidate(new window.RTCIceCandidate(candidate));
-                console.log("[requestCandidates] Got initiator candidate " + JSON.stringify(candidate));
-            }
-        }, error:function(){
-            console.log("[requestCandidates] No initiator candidates, wait for a while.");
-            setTimeout(requestCandidates, 1000);
-        }});
-    };
+    });
 }
 
 function escapeOffer(offer) {

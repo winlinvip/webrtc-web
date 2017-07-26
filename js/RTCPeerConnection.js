@@ -88,7 +88,7 @@ new Promise(function(resolve, reject){
         // to pass in the right constraints in order for it to
         // accept the incoming offer of audio and video.
         pcRemote.createAnswer(function(answer){
-            pcRemote.setLocalDescription(answer); // trigger pcRemote.onicecandiate().
+            pcRemote.setLocalDescription(answer); // trigger pcRemote.onicecandidate().
             console.log("[pcRemote.createAnswer] answer " + answer.sdp.length + "B sdp as bellow:");
             console.log(answer);
 
