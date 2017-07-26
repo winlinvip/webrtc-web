@@ -11,3 +11,5 @@ Simple examples for https://github.com/googlecodelabs/webrtc-web over Chrome.
 - [ ] [Snapshot over data channel](#), for [codelabs #8](https://codelabs.developers.google.com/codelabs/webrtc-web/#8)
 
 ## PeerConnection
+
+![image](https://user-images.githubusercontent.com/2777660/28608210-0cbbec38-7212-11e7-9f80-10476cd30a54.png)
