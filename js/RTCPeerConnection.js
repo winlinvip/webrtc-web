@@ -1,21 +1,30 @@
 'use strict';
 
-navigator.webkitGetUserMedia({
-    video:true,audio:false
-},function(stream){
-    // https://codelabs.developers.google.com/codelabs/webrtc-web/#4
+// https://codelabs.developers.google.com/codelabs/webrtc-web/#4
+var pcLocal = null;
+var transmitLocalCandidate = null;
+var transmitLocalOffer = null;
+var pcRemote = null;
+var transmitRemoteCandidate = null;
+var transmitRemoteAnswer = null;
+
+new Promise(function(resolve, reject){
+    navigator.webkitGetUserMedia({
+        video:true,audio:false
+    },function(stream){
+        resolve(stream);
+    }, function(error){
+        reject(error);
+    });
+}).then(function(stream){
     var lv = document.getElementById("local");
     lv.src = window.URL.createObjectURL(stream);
     console.log("[navigator.webkitGetUserMedia] lv.src=localStream " + lv.src);
 
-    rtcCall(stream);
-}, function(error){
-    console.error(error);
-});
-
-function rtcCall(localStream) {
+    return stream;
+}).then(function(localStream){
     // local peer connection setup.
-    var pcLocal = new window.webkitRTCPeerConnection(null);
+    pcLocal = new window.webkitRTCPeerConnection(null);
     pcLocal.onicecandidate = function(e) {
         console.log("[pcLocal.onicecandidate] e=" + (e.candidate? e.candidate.candidate:"null"));
         if (e.candidate) {
@@ -27,7 +36,7 @@ function rtcCall(localStream) {
     console.log("[pcLocal.addStream] add localStream to peer connection");
 
     // remote peer connection setup.
-    var pcRemote = new window.webkitRTCPeerConnection(null);
+    pcRemote = new window.webkitRTCPeerConnection(null);
     pcRemote.onicecandidate = function(e) {
         console.log("[pcRemote.onicecandidate] e=" + (e.candidate? e.candidate.candidate:"null"));
         if (e.candidate) {
@@ -40,26 +49,8 @@ function rtcCall(localStream) {
         rv.src = window.URL.createObjectURL(e.stream);
         console.log("[pcRemote.onaddstream] rv.src=" + rv.src);
     };
-
-    // trigger connection between local and remote peer.
-    new Promise(function(resolve, reject){
-        pcLocal.createOffer(function(offer){
-            resolve(offer);
-        }, function(error){
-            reject(error);
-        });
-    }).then(function(offer){
-        pcLocal.setLocalDescription(offer); // trigger pcLocal.onicecandidate().
-        console.log("[pcLocal.createOffer] offer " + offer.sdp.length + "B sdp as bellow:");
-        console.log(offer);
-
-        // transmit offer to remote.
-        setTimeout(transmitLocalOffer, 200, copyObject(offer));
-    });
-
+}).then(function(){
     // Fire local video.
-    var transmitRemoteCandidate = null;
-    var transmitRemoteAnswer = null;
     Promise.all([new Promise(function(resolve, reject){
         transmitRemoteCandidate = function(candidate) {
             resolve(candidate);
@@ -78,8 +69,6 @@ function rtcCall(localStream) {
     });
 
     // Fire remote video.
-    var transmitLocalCandidate = null;
-    var transmitLocalOffer = null;
     Promise.all([new Promise(function(resolve, reject){
         transmitLocalCandidate = function(candidate) {
             resolve(candidate);
@@ -108,7 +97,23 @@ function rtcCall(localStream) {
             throw(error);
         });
     });
-}
+}).then(function(){
+    // trigger connection between local and remote peer.
+    new Promise(function(resolve, reject){
+        pcLocal.createOffer(function(offer){
+            resolve(offer);
+        }, function(error){
+            reject(error);
+        });
+    }).then(function(offer){
+        pcLocal.setLocalDescription(offer); // trigger pcLocal.onicecandidate().
+        console.log("[pcLocal.createOffer] offer " + offer.sdp.length + "B sdp as bellow:");
+        console.log(offer);
+
+        // transmit offer to remote.
+        setTimeout(transmitLocalOffer, 200, copyObject(offer));
+    });
+});
 
 function copyObject(obj) {
     var cp = {};
