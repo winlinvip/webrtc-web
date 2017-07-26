@@ -1,7 +1,6 @@
 'use strict';
 
 // https://codelabs.developers.google.com/codelabs/webrtc-web/#6
-var rv = document.getElementById("remote");
 var api = "";
 
 $("#start").click(function(){
@@ -10,13 +9,20 @@ $("#start").click(function(){
         api = "http://" + napi;
     }
 
-    callInitiator();
-});
-
-function callInitiator() {
     // Use a peer connection to connect to initiator.
     var pcRemote = new window.webkitRTCPeerConnection(null);
 
+    // Render the remote initiator stream.
+    pcRemote.onaddstream = function(e) {
+        var rv = document.getElementById("remote");
+        rv.src = window.URL.createObjectURL(e.stream);
+        console.log("[pcRemote.onaddstream] rv.src=remoteStream " + rv.src);
+    };
+
+    callInitiator(pcRemote, api);
+});
+
+function callInitiator(pcRemote, api) {
     // Transmit the responder candidates to signaling server.
     pcRemote.onicecandidate = function(e) {
         if (!e.candidate) {
@@ -28,12 +34,6 @@ function callInitiator() {
     var transmitResponderCandidate = function(candidate) {
         candidate = JSON.stringify(escapeCandicate(candidate));
         $.ajax({type:"POST", async:false, url:api+"/api/webrtc/rcandidates", contentType:"application/json", data:candidate});
-    };
-
-    // Render the remote initiator stream.
-    pcRemote.onaddstream = function(e) {
-        rv.src = window.URL.createObjectURL(e.stream);
-        console.log("[pcRemote.onaddstream] rv.src=remoteStream " + rv.src);
     };
 
     // Query the offer of initiator from signaling server.
