@@ -24,7 +24,7 @@ $("#start").click(function(){
 
         // Use a peer connection to share stream to responder.
         var conn = new window.webkitRTCPeerConnection({iceServers:[{
-            urls:"stun:stun.ossrs.net", username:"winlin@ossrs.net", credential:"12345678"
+            urls:"turn:stun.ossrs.net", username:"winlin", credential:"12345678"
         }]});
         conn.addStream(stream);
         console.log("[conn.addStream] add stream to peer connection");
@@ -35,34 +35,16 @@ $("#start").click(function(){
             rv.src = window.URL.createObjectURL(e.stream);
             console.log("[conn.onaddstream] rv.src=remoteStream " + rv.src);
         };
-
-        conn.onicecandidate = function(e) {
-            console.log("[conn.onicecandidate] e is:");
-            console.log(e);
-        };
-        conn.iceconnectionstatechange = function(e) {
-            console.log("[conn.iceconnectionstatechange] e is:");
-            console.log(e);
-        };
-        conn.onicegatheringstatechange = function(e) {
-            console.log("[conn.onicegatheringstatechange] e is:");
-            console.log(e);
-        };
-        conn.onnegotiationneeded = function(e) {
-            console.log("[conn.onnegotiationneeded] e is:");
-            console.log(e);
-        };
-        conn.onsignalingstatechange = function(e) {
-            console.log("[conn.onsignalingstatechange] e is:");
-            console.log(e);
-        };
-
         return conn;
     }).then(function(conn){
-return;
         Promise.all([new Promise(function(resolve, reject){
             conn.onicecandidate = function(e) {
                 if (!e.candidate) {
+                    return;
+                }
+
+                if (e.candidate.candidate.indexOf("relay") == -1) {
+                    console.log("[conn.onicecandidate] ignore " + e.candidate.candidate);
                     return;
                 }
 
