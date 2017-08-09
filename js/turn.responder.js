@@ -24,7 +24,7 @@ $("#start").click(function(){
 
         // Use a peer connection to share stream to responder.
         var conn = new window.webkitRTCPeerConnection({iceServers:[{
-            urls:"turn:stun.ossrs.net", username:"winlin", credential:"12345678"
+            urls:"turn:stun.ossrs.net", username:"guest", credential:"12345678"
         }]});
         conn.addStream(stream);
         console.log("[conn.addStream] add stream to peer connection");
