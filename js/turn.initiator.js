@@ -11,7 +11,7 @@ $("#start").click(function(){
 
     new Promise(function(resolve, reject){
         navigator.webkitGetUserMedia({
-            video:true,audio:false
+            video:true,audio:true
         },function(stream){
             resolve(stream);
         }, function(error){
