@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"path"
 	"encoding/json"
+	"sync"
 )
 
 func main() {
@@ -17,6 +18,7 @@ func main() {
 	fmt.Println("Please open SignalingService.initiator.html then SignalingService.responder.html")
 
 	cache := make(map[string][]string)
+	clock := sync.Mutex{}
 	fmt.Println("Handle /api/offer /api/answer /api/icandidates /api/rcandidates")
 	http.HandleFunc("/api/", func(w http.ResponseWriter, r *http.Request) {
 		key := path.Base(r.URL.Path)
@@ -24,6 +26,9 @@ func main() {
 			http.Error(w, fmt.Sprintf("Illegal key %v and path %v", key, r.URL.Path), http.StatusInternalServerError)
 			return
 		}
+
+		clock.Lock()
+		defer clock.Unlock()
 
 		if r.Method == "POST" {
 			var b []byte

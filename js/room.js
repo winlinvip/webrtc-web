@@ -18,9 +18,7 @@ $("#join").click(function(){
             reject(error);
         });
     }).then(function(stream){
-        var lv = document.getElementById("local");
-        lv.src = window.URL.createObjectURL(stream);
-        console.log("[navigator.webkitGetUserMedia] lv.src= " + lv.src);
+        $("#local").attr("src", window.URL.createObjectURL(stream));
 
         // Use a peer connection to share stream to responder.
         var conn = new window.webkitRTCPeerConnection({iceServers:[{
@@ -31,9 +29,13 @@ $("#join").click(function(){
 
         // Render the remote initiator stream.
         conn.onaddstream = function(e) {
-            var rv = document.getElementById("remote");
-            rv.src = window.URL.createObjectURL(e.stream);
-            console.log("[conn.onaddstream] rv.src=remoteStream " + rv.src);
+            var id = "video_" + e.stream.id;
+            var src = window.URL.createObjectURL(e.stream);
+            $("#videos").append($('<video autoplay controls></video>').attr("id", id).attr("src", src));
+            console.log("[conn.onaddstream] add stream " + id + ", src=" + src);
+        };
+        conn.onremovestream = function(e) {
+            console.log("[conn.onremovestream] remove stream");
         };
         return conn;
     }).then(function(conn){
