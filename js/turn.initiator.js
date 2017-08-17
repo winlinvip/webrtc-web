@@ -23,9 +23,7 @@ $("#start").click(function(){
         console.log("[navigator.webkitGetUserMedia] lv.src= " + lv.src);
 
         // Use a peer connection to share stream to responder.
-        var conn = new window.webkitRTCPeerConnection({iceServers:[{
-            urls:"turn:stun.ossrs.net", username:"winlin", credential:"12345678"
-        }]});
+        var conn = new window.webkitRTCPeerConnection({iceServers:[{urls:["turn:stun.ossrs.net"], username:"winlin", credential:"12345678"}]});
         conn.addStream(stream);
         console.log("[conn.addStream] add stream to peer connection");
 
@@ -59,6 +57,9 @@ $("#start").click(function(){
             };
         }), new Promise(function(resolve, reject){
             conn.createOffer(function(offer){
+                // For chrome new API, we can delay set the TURN.
+                //conn.setConfiguration({iceServers:[{urls:["turn:stun.ossrs.net"], username:"winlin", credential:"12345678"}]});
+
                 conn.setLocalDescription(offer); // trigger conn.onicecandidate().
                 console.log("[conn.createOffer] Request with offer " + offer.sdp.length + "B sdp as bellow:");
                 console.log(offer);
@@ -117,6 +118,7 @@ function waitResponder(pcLocal) {
         }).then(function(data){
             for (var i = 0; i < data.length; i++) {
                 var candidate = unescapeCandicate(JSON.parse(data[i]));
+                // Before addIceCandidate, we should setRemoteDescription.
                 pcLocal.addIceCandidate(new window.RTCIceCandidate(candidate));
                 console.log("[requestCandidates] Got responder candidate " + JSON.stringify(candidate));
             }
