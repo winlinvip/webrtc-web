@@ -50,7 +50,7 @@ function callInitiator(pcRemote, api) {
         // once got the peer offer(SDP), we can generate our answer(SDP).
         pcRemote.setRemoteDescription(offer); // trigger pcRemote.onaddstream
         console.log("[onRemoteGotOffer] Got offer " + offer.sdp.length + "B sdp as bellow:");
-        console.log(offer);
+        console.log(offer); console.log(offer.sdp);
 
         // before addIceCandidate, we must setRemoteDescription
         for (var i = 0; i < candidates.length; i++) {
@@ -66,7 +66,7 @@ function callInitiator(pcRemote, api) {
             pcRemote.createAnswer(function(answer){
                 pcRemote.setLocalDescription(answer); // trigger pcRemote.onicecandidate().
                 console.log("[pcRemote.createAnswer] answer " + answer.sdp.length + "B sdp as bellow:");
-                console.log(answer);
+                console.log(answer); console.log(answer.sdp);
 
                 resolve(answer);
             }, function(error){
