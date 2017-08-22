@@ -47,6 +47,7 @@ $("#start").click(function(){
                 }
 
                 console.log("[conn.onicecandidate] " + e.candidate.candidate);
+                console.log(e.candidate);
 
                 // Transmit initiator candidates info to signaling server.
                 var data = JSON.stringify(escapeCandicate(e.candidate));

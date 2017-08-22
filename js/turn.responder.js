@@ -114,6 +114,7 @@ function callInitiator(conn, api) {
                     return;
                 }
                 console.log("[conn.onicecandidate] " + e.candidate.candidate);
+                console.log(e.candidate);
                 resolve(e.candidate);
             };
         })]).then(function([answer,candidate]){
