@@ -43,15 +43,25 @@ $("#start").click(function(){
 function callInitiator(conn, api) {
     Promise.all([new Promise(function(resolve, reject){
         // Request the candidates of initiator.
-        $.ajax({
-            type:"GET", async:true, url:api+"/api/webrtc/icandidates", contentType:"application/json",
-            success:function(data){
-                data = JSON.parse(data) || [];
-                resolve(data);
-            }, error:function(xhr,err){
-                reject(err);
-            }
-        });
+        var requestCandidates = function() {
+            $.ajax({
+                type:"GET", async:true, url:api+"/api/webrtc/icandidates", contentType:"application/json",
+                success:function(data){
+                    data = JSON.parse(data) || [];
+
+                    // Wait util the rcandidates are completed, we should got 2 candidates.
+                    if (data.length != 2) {
+                        setTimeout(requestCandidates, 1000);
+                        return;
+                    }
+                    
+                    resolve(data);
+                }, error:function(xhr,err){
+                    reject(err);
+                }
+            });
+        };
+        requestCandidates();
     }), new Promise(function(resolve, reject){
         // Query the offer of initiator from signaling server.
         $.ajax({

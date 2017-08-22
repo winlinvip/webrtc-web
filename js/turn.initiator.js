@@ -107,6 +107,13 @@ function waitResponder(pcLocal) {
                     type:"GET", async:true, url:api+"/api/webrtc/rcandidates", contentType:"application/json",
                     success:function(data){
                         data = JSON.parse(data) || [];
+
+                        // Wait util the rcandidates are completed, we should got 2 candidates.
+                        if (data.length != 2) {
+                            setTimeout(requestCandidates, 1000);
+                            return;
+                        }
+
                         resolve(data);
                     }, error:function(){
                         console.log("[requestCandidates] No responder candidates, wait for a while.");
