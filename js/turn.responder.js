@@ -87,53 +87,37 @@ function callInitiator(conn, api) {
             console.log("[requestCandidates] Got initiator candidate " + JSON.stringify(candidate));
         }
 
-        var ready = false;
-        Promise.all([new Promise(function(resolve, reject){
-            // Transmit the responder candidates to signaling server.
-            conn.onicecandidate = function(e) {
-                if (!e.candidate) {
-                    return;
-                }
-                if (e.candidate.candidate.indexOf("relay") == -1) {
-                    console.log("[conn.onicecandidate] ignore " + e.candidate.candidate);
-                    return;
-                }
-                console.log("[conn.onicecandidate] " + e.candidate.candidate);
-                console.log(e.candidate);
-                resolve(e.candidate);
-            };
-            
-            ready = true;
-        }), new Promise(function(resolve, reject){
-            // Since the 'remote' side has no media stream we need
-            // to pass in the right constraints in order for it to
-            // accept the incoming offer of audio and video.
-            conn.createAnswer(function(answer){
-                var processAnswer = function() {
-                    if (!ready) {
-                        setTimeout(processAnswer, 1000);
-                        return;
-                    }
-
-                    // For chrome new API, we can delay set the TURN.
-                    //conn.setConfiguration({iceServers:[{urls:["turn:stun.ossrs.net"], username:"guest", credential:"12345678"}]});
-
-                    conn.setLocalDescription(answer); // trigger conn.onicecandidate().
-                    console.log("[conn.createAnswer] answer " + answer.sdp.length + "B sdp as bellow:");
-                    console.log(answer); console.log(answer.sdp);
-
-                    resolve(answer);
-                };
-                setTimeout(processAnswer, 0);
-            }, function(error){
-                reject(error);
-            });
-        })]).then(function([answer,candidate]){
-            var data = JSON.stringify(escapeOffer(answer));
-            $.ajax({type:"POST", async:true, url:api+"/api/webrtc/answer", contentType:"application/json", data:data});
+        // Transmit the responder candidates to signaling server.
+        conn.onicecandidate = function(e) {
+            if (!e.candidate) {
+                return;
+            }
+            if (e.candidate.candidate.indexOf("relay") == -1) {
+                console.log("[conn.onicecandidate] ignore " + e.candidate.candidate);
+                return;
+            }
+            console.log("[conn.onicecandidate] " + e.candidate.candidate);
+            console.log(e.candidate);
 
             data = JSON.stringify(escapeCandicate(candidate));
             $.ajax({type:"POST", async:true, url:api+"/api/webrtc/rcandidates", contentType:"application/json", data:data});
+        };
+
+        // Since the 'remote' side has no media stream we need
+        // to pass in the right constraints in order for it to
+        // accept the incoming offer of audio and video.
+        conn.createAnswer(function(answer){
+            // For chrome new API, we can delay set the TURN.
+            //conn.setConfiguration({iceServers:[{urls:["turn:stun.ossrs.net"], username:"guest", credential:"12345678"}]});
+
+            conn.setLocalDescription(answer); // trigger conn.onicecandidate().
+            console.log("[conn.createAnswer] answer " + answer.sdp.length + "B sdp as bellow:");
+            console.log(answer); console.log(answer.sdp);
+
+            var data = JSON.stringify(escapeOffer(answer));
+            $.ajax({type:"POST", async:true, url:api+"/api/webrtc/answer", contentType:"application/json", data:data});
+        }, function(error){
+            console.log(error);
         });
     });
 }
