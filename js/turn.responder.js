@@ -87,7 +87,7 @@ function callInitiator(conn, api) {
             console.log("[conn.onicecandidate] " + e.candidate.candidate);
             console.log(e.candidate);
 
-            data = JSON.stringify(escapeCandicate(e.candidate));
+            var data = JSON.stringify(escapeCandicate(e.candidate));
             $.ajax({type:"POST", async:true, url:api+"/api/webrtc/rcandidates", contentType:"application/json", data:data});
         };
 
