@@ -63,7 +63,7 @@ $("#start").click(function(){
 
                 conn.setLocalDescription(offer); // trigger conn.onicecandidate().
                 console.log("[conn.createOffer] Request with offer " + offer.sdp.length + "B sdp as bellow:");
-                console.log(offer);
+                console.log(offer); console.log(offer.sdp);
 
                 // Create a offer so that the responder can answer.
                 var data = JSON.stringify(escapeOffer(offer));
@@ -99,7 +99,7 @@ function waitResponder(pcLocal) {
         // Wait for responder to reply the answer.
         pcLocal.setRemoteDescription(answer);
         console.log("[onLocalGotAnswer] Got answer " + answer.sdp.length + "B sdp as bellow:");
-        console.log(answer);
+        console.log(answer);  console.log(answer.sdp);
 
         new Promise(function(resolve, reject){
             var count = 0;

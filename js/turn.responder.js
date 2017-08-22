@@ -78,7 +78,7 @@ function callInitiator(conn, api) {
         // once got the peer offer(SDP), we can generate our answer(SDP).
         conn.setRemoteDescription(offer); // trigger conn.onaddstream
         console.log("[onRemoteGotOffer] Got offer " + offer.sdp.length + "B sdp as bellow:");
-        console.log(offer);
+        console.log(offer); console.log(offer.sdp);
 
         // before addIceCandidate, we must setRemoteDescription
         for (var i = 0; i < candidates.length; i++) {
@@ -97,7 +97,7 @@ function callInitiator(conn, api) {
 
                 conn.setLocalDescription(answer); // trigger conn.onicecandidate().
                 console.log("[conn.createAnswer] answer " + answer.sdp.length + "B sdp as bellow:");
-                console.log(answer);
+                console.log(answer); console.log(answer.sdp);
 
                 resolve(answer);
             }, function(error){
