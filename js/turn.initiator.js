@@ -102,7 +102,6 @@ function waitResponder(pcLocal) {
         console.log(answer);  console.log(answer.sdp);
 
         new Promise(function(resolve, reject){
-            var count = 0;
             // When got answer from responder, request its candidates.
             var requestCandidates = function() {
                 $.ajax({
@@ -110,8 +109,8 @@ function waitResponder(pcLocal) {
                     success:function(data){
                         data = JSON.parse(data) || [];
 
-                        // Wait util the rcandidates are completed, we should got 2 candidates.
-                        if (data.length != 2 && count++ < 3) {
+                        // Wait util the rcandidates are completed, we should got 1+ candidates.
+                        if (data.length <= 1) {
                             setTimeout(requestCandidates, 1000);
                             return;
                         }

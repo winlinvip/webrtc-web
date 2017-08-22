@@ -49,8 +49,8 @@ function callInitiator(conn, api) {
                 success:function(data){
                     data = JSON.parse(data) || [];
 
-                    // Wait util the rcandidates are completed, we should got 2 candidates.
-                    if (data.length != 2) {
+                    // Wait util the rcandidates are completed, we should got 2+ candidates.
+                    if (data.length < 2) {
                         setTimeout(requestCandidates, 1000);
                         return;
                     }
@@ -118,6 +118,7 @@ function callInitiator(conn, api) {
                 var candidate = unescapeCandicate(JSON.parse(candidates[i]));
                 conn.addIceCandidate(new window.RTCIceCandidate(candidate));
                 console.log("[requestCandidates] Got initiator candidate " + JSON.stringify(candidate));
+                console.log(candidate);
             }
         }, function(error){
             console.log(error);
