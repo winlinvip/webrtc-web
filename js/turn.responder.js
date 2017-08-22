@@ -88,6 +88,20 @@ function callInitiator(conn, api) {
         }
 
         Promise.all([new Promise(function(resolve, reject){
+            // Transmit the responder candidates to signaling server.
+            conn.onicecandidate = function(e) {
+                if (!e.candidate) {
+                    return;
+                }
+                if (e.candidate.candidate.indexOf("relay") == -1) {
+                    console.log("[conn.onicecandidate] ignore " + e.candidate.candidate);
+                    return;
+                }
+                console.log("[conn.onicecandidate] " + e.candidate.candidate);
+                console.log(e.candidate);
+                resolve(e.candidate);
+            };
+        }), new Promise(function(resolve, reject){
             // Since the 'remote' side has no media stream we need
             // to pass in the right constraints in order for it to
             // accept the incoming offer of audio and video.
@@ -103,20 +117,6 @@ function callInitiator(conn, api) {
             }, function(error){
                 reject(error);
             });
-        }), new Promise(function(resolve, reject){
-            // Transmit the responder candidates to signaling server.
-            conn.onicecandidate = function(e) {
-                if (!e.candidate) {
-                    return;
-                }
-                if (e.candidate.candidate.indexOf("relay") == -1) {
-                    console.log("[conn.onicecandidate] ignore " + e.candidate.candidate);
-                    return;
-                }
-                console.log("[conn.onicecandidate] " + e.candidate.candidate);
-                console.log(e.candidate);
-                resolve(e.candidate);
-            };
         })]).then(function([answer,candidate]){
             var data = JSON.stringify(escapeOffer(answer));
             $.ajax({type:"POST", async:true, url:api+"/api/webrtc/answer", contentType:"application/json", data:data});
