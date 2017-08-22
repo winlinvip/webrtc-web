@@ -91,6 +91,11 @@ function callInitiator(conn, api) {
             $.ajax({type:"POST", async:true, url:api+"/api/webrtc/rcandidates", contentType:"application/json", data:data});
         };
 
+        // once got the peer offer(SDP), we can generate our answer(SDP).
+        conn.setRemoteDescription(offer); // trigger conn.onaddstream
+        console.log("[onRemoteGotOffer] Got offer " + offer.sdp.length + "B sdp as bellow:");
+        console.log(offer); console.log(offer.sdp);
+
         // Since the 'remote' side has no media stream we need
         // to pass in the right constraints in order for it to
         // accept the incoming offer of audio and video.
@@ -104,11 +109,6 @@ function callInitiator(conn, api) {
 
             var data = JSON.stringify(escapeOffer(answer));
             $.ajax({type:"POST", async:true, url:api+"/api/webrtc/answer", contentType:"application/json", data:data});
-            
-            // once got the peer offer(SDP), we can generate our answer(SDP).
-            conn.setRemoteDescription(offer); // trigger conn.onaddstream
-            console.log("[onRemoteGotOffer] Got offer " + offer.sdp.length + "B sdp as bellow:");
-            console.log(offer); console.log(offer.sdp);
 
             // before addIceCandidate, we must setRemoteDescription
             for (var i = 0; i < candidates.length; i++) {
