@@ -75,18 +75,6 @@ function callInitiator(conn, api) {
             }
         });
     })]).then(function([candidates,offer]){
-        // once got the peer offer(SDP), we can generate our answer(SDP).
-        conn.setRemoteDescription(offer); // trigger conn.onaddstream
-        console.log("[onRemoteGotOffer] Got offer " + offer.sdp.length + "B sdp as bellow:");
-        console.log(offer); console.log(offer.sdp);
-
-        // before addIceCandidate, we must setRemoteDescription
-        for (var i = 0; i < candidates.length; i++) {
-            var candidate = unescapeCandicate(JSON.parse(candidates[i]));
-            conn.addIceCandidate(new window.RTCIceCandidate(candidate));
-            console.log("[requestCandidates] Got initiator candidate " + JSON.stringify(candidate));
-        }
-
         // Transmit the responder candidates to signaling server.
         conn.onicecandidate = function(e) {
             if (!e.candidate) {
@@ -99,7 +87,7 @@ function callInitiator(conn, api) {
             console.log("[conn.onicecandidate] " + e.candidate.candidate);
             console.log(e.candidate);
 
-            data = JSON.stringify(escapeCandicate(candidate));
+            data = JSON.stringify(escapeCandicate(e.candidate));
             $.ajax({type:"POST", async:true, url:api+"/api/webrtc/rcandidates", contentType:"application/json", data:data});
         };
 
@@ -116,6 +104,18 @@ function callInitiator(conn, api) {
 
             var data = JSON.stringify(escapeOffer(answer));
             $.ajax({type:"POST", async:true, url:api+"/api/webrtc/answer", contentType:"application/json", data:data});
+            
+            // once got the peer offer(SDP), we can generate our answer(SDP).
+            conn.setRemoteDescription(offer); // trigger conn.onaddstream
+            console.log("[onRemoteGotOffer] Got offer " + offer.sdp.length + "B sdp as bellow:");
+            console.log(offer); console.log(offer.sdp);
+
+            // before addIceCandidate, we must setRemoteDescription
+            for (var i = 0; i < candidates.length; i++) {
+                var candidate = unescapeCandicate(JSON.parse(candidates[i]));
+                conn.addIceCandidate(new window.RTCIceCandidate(candidate));
+                console.log("[requestCandidates] Got initiator candidate " + JSON.stringify(candidate));
+            }
         }, function(error){
             console.log(error);
         });
