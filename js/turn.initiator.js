@@ -23,7 +23,7 @@ $("#start").click(function(){
         console.log("[navigator.webkitGetUserMedia] lv.src= " + lv.src);
 
         // Use a peer connection to share stream to responder.
-        var conn = new window.webkitRTCPeerConnection({iceServers:[{urls:["turn:106.14.105.78"], username:"islandtest", credential:"hello1234"}]});
+        var conn = new window.webkitRTCPeerConnection({iceServers:[{urls:["turn:stun.ossrs.net"], username:"winlin", credential:"12345678"}]});
         conn.addStream(stream);
         console.log("[conn.addStream] add stream to peer connection");
 

@@ -54,7 +54,7 @@ function callInitiator(conn, api) {
                         setTimeout(requestCandidates, 1000);
                         return;
                     }
-                    
+
                     resolve(data);
                 }, error:function(xhr,err){
                     reject(err);
