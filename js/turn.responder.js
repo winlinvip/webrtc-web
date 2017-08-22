@@ -67,7 +67,10 @@ function callInitiator(conn, api) {
         $.ajax({
             type:"GET", async:true, url:api+"/api/webrtc/offer", contentType:"application/json",
             success:function(data){
-                var offer = unescapeOffer(JSON.parse(JSON.parse(data)[0]));
+                var offer = JSON.parse(data);
+                offer = offer[0];
+                offer = JSON.parse(offer);
+                offer = unescapeOffer(offer);
                 resolve(offer);
             },
             error: function(xhr, err) {
