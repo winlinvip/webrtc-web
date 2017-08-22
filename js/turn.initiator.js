@@ -110,7 +110,7 @@ function waitResponder(pcLocal) {
                         data = JSON.parse(data) || [];
 
                         // Wait util the rcandidates are completed, we should got 1+ candidates.
-                        if (data.length <= 1) {
+                        if (data.length < 1) {
                             setTimeout(requestCandidates, 1000);
                             return;
                         }
