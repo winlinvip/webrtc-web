@@ -15,7 +15,11 @@ $("#start").click(function(){
     // Render the remote initiator stream.
     pcRemote.onaddstream = function(e) {
         var rv = document.getElementById("remote");
-        rv.src = window.URL.createObjectURL(e.stream);
+        try {
+            rv.src = window.URL.createObjectURL(e.stream);
+        } catch (error) {
+            rv.srcObject = e.stream;
+        }
         console.log("[pcRemote.onaddstream] rv.src=remoteStream " + rv.src);
     };
 

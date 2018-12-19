@@ -7,7 +7,11 @@ var video = document.getElementById("main");
 navigator.webkitGetUserMedia({
     video:true,audio:false
 }, function(stream){
-    video.src = window.URL.createObjectURL(stream);
+    try {
+        video.src = window.URL.createObjectURL(stream);
+    } catch (error) {
+        video.srcObject = stream;
+    }
 }, function(error){
     console.error(error);
 });

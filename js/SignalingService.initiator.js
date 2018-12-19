@@ -19,7 +19,11 @@ $("#start").click(function(){
         });
     }).then(function(stream){
         var lv = document.getElementById("local");
-        lv.src = window.URL.createObjectURL(stream);
+	    try {
+	        lv.src = window.URL.createObjectURL(stream);
+	    } catch (error) {
+	        lv.srcObject = stream;
+	    }
         console.log("[navigator.webkitGetUserMedia] lv.src= " + lv.src);
 
         // Use a peer connection to share stream to responder.

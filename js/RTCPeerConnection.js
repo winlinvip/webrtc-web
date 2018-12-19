@@ -18,7 +18,11 @@ new Promise(function(resolve, reject){
     });
 }).then(function(stream){
     var lv = document.getElementById("local");
-    lv.src = window.URL.createObjectURL(stream);
+    try {
+        lv.src = window.URL.createObjectURL(stream);
+    } catch (error) {
+        lv.srcObject = stream;
+    }
     console.log("[navigator.webkitGetUserMedia] lv.src=localStream " + lv.src);
 
     return stream;
@@ -46,7 +50,11 @@ new Promise(function(resolve, reject){
     };
     pcRemote.onaddstream = function(e) {
         var rv = document.getElementById("remote");
-        rv.src = window.URL.createObjectURL(e.stream);
+        try {
+            rv.src = window.URL.createObjectURL(e.stream);
+        } catch (error) {
+            rv.srcObject = e.stream;
+        }
         console.log("[pcRemote.onaddstream] rv.src=" + rv.src);
     };
 }).then(function(){
