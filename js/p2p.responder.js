@@ -8,6 +8,7 @@ $("#start").click(function(){
     if (napi != "/") {
         api = "http://" + napi;
     }
+    $("#start").hide();
 
     new Promise(function(resolve, reject){
         navigator.webkitGetUserMedia({
