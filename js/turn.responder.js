@@ -9,7 +9,7 @@ var connect = function(){
     $("#api").attr('disabled', true);
 
     new Promise(function(resolve, reject){
-        navigator.webkitGetUserMedia({
+        navigator.getUserMedia({
             video:true,audio:true
         },function(stream){
             resolve(stream);
@@ -23,7 +23,7 @@ var connect = function(){
         } catch (error) {
             lv.srcObject = stream;
         }
-        console.log("[navigator.webkitGetUserMedia] lv.src= " + lv.src);
+        console.log("[navigator.getUserMedia] lv.src= " + lv.src);
 
         // Use a peer connection to share stream to responder.
         var conn = new window.webkitRTCPeerConnection({
