@@ -160,17 +160,15 @@ function checkRestart() {
                     var answer = unescapeOffer(JSON.parse(JSON.parse(data)[0]));
                     resolve(answer);
                 }, error:function(){
-                    console.log("[waitAnswer] No answer, wait for a while.");
-                    setTimeout(waitAnswer, 1000);
+                    reject();
                 }
             });
         };
-        setTimeout(waitAnswer, 0);
     }).then(function(answer){
         console.log(answer);
         setTimeout(checkRestart, 1000);
     }).catch(function(reason) {
-        console.error(reason);
+        console.log("[heatbeat] Signaling reset.");
     });
 }
 

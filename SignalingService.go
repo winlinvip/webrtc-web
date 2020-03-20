@@ -42,14 +42,17 @@ func main() {
 			// If got initiator/offer, always reset all, to make responder/answer to restart.
 			if key == "offer" {
 				cache = make(map[string][]string)
+				fmt.Println("Reset signaling because got offer/initiator")
 			}
 
 			// If got responder/answer, clear all candidates.
 			if key == "answer" {
 				cache["rcandidates"] = nil
+				fmt.Println("Reset rcandidates because got answer/responder")
 				// If clear initiator/offer to make it to restart.
 				if _, ok := cache["answer"]; ok {
 					cache = make(map[string][]string)
+					fmt.Println("Reset signaling because already connected")
 				}
 			}
 
