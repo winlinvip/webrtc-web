@@ -1,14 +1,12 @@
 'use strict';
 
-// https://codelabs.developers.google.com/codelabs/webrtc-web/#6
-var api = "";
-
-$("#start").click(function(){
+var connect = function(){
     var napi = document.getElementById("api").value;
     if (napi != "/") {
         api = "http://" + napi;
     }
     $("#start").hide();
+    $("#api").attr('disabled', true);
 
     new Promise(function(resolve, reject){
         navigator.webkitGetUserMedia({
@@ -28,18 +26,20 @@ $("#start").click(function(){
         console.log("[navigator.webkitGetUserMedia] lv.src= " + lv.src);
 
         // Use a peer connection to share stream to responder.
-        var conn = new window.webkitRTCPeerConnection({iceServers:[{urls:["turn:stun.ossrs.net"], username:"winlin", credential:"12345678"}]});
+        var conn = new window.webkitRTCPeerConnection({
+            iceServers:[{urls:["turn:stun.ossrs.net"], username:"winlin", credential:"12345678"
+        }]});
         conn.addStream(stream);
         console.log("[conn.addStream] add stream to peer connection");
 
         // Render the remote initiator stream.
         conn.onaddstream = function(e) {
             var rv = document.getElementById("remote");
-	        try {
-	            rv.src = window.URL.createObjectURL(e.stream);
-	        } catch (error) {
-	            rv.srcObject = e.stream;
-	        }
+            try {
+                rv.src = window.URL.createObjectURL(e.stream);
+            } catch (error) {
+                rv.srcObject = e.stream;
+            }
             console.log("[conn.onaddstream] rv.src=remoteStream " + rv.src);
         };
         return conn;
@@ -87,7 +87,12 @@ $("#start").click(function(){
             setTimeout(waitResponder, 5000, conn);
         });
     });
-});
+};
+
+// https://codelabs.developers.google.com/codelabs/webrtc-web/#6
+var api = "";
+$("#start").click(connect);
+connect();
 
 function waitResponder(pcLocal) {
     new Promise(function(resolve, reject){
