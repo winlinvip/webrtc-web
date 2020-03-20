@@ -155,7 +155,7 @@ function checkRestart() {
     new Promise(function(resolve, reject){
         var waitAnswer = function(){
             $.ajax({
-                type:"GET", async:true, url:api+"/api/webrtc/answer", contentType:"application/json",
+                type:"GET", async:true, url:api+"/api/webrtc/offer", contentType:"application/json",
                 success:function(data){
                     var answer = unescapeOffer(JSON.parse(JSON.parse(data)[0]));
                     resolve(answer);

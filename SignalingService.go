@@ -39,17 +39,24 @@ func main() {
 			content := string(b)
 			fmt.Println("Update", key, content)
 
+			// If got initiator/offer, always reset all, to make responder/answer to restart.
 			if key == "offer" {
 				cache = make(map[string][]string)
 			}
+
+			// If got responder/answer, clear all candidates.
 			if key == "answer" {
 				cache["rcandidates"] = nil
+				// If clear initiator/offer to make it to restart.
+				if _, ok := cache["answer"]; ok {
+					cache = make(map[string][]string)
+				}
 			}
 
 			values,_ := cache[key]
 			if key == "offer" || key == "answer" {
 				cache[key] = []string { content }
-			} else {
+			} else { // candidates.
 				cache[key] = append(values, content)
 			}
 		} else if r.Method == "GET" {
