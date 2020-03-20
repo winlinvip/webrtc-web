@@ -153,19 +153,17 @@ function waitResponder(pcLocal) {
 
 function checkRestart() {
     new Promise(function(resolve, reject){
-        var waitAnswer = function(){
-            $.ajax({
-                type:"GET", async:true, url:api+"/api/webrtc/offer", contentType:"application/json",
-                success:function(data){
-                    var answer = unescapeOffer(JSON.parse(JSON.parse(data)[0]));
-                    resolve(answer);
-                }, error:function(){
-                    reject();
-                }
-            });
-        };
-    }).then(function(answer){
-        console.log(answer);
+        $.ajax({
+            type:"GET", async:true, url:api+"/api/webrtc/offer", contentType:"application/json",
+            success:function(data){
+                var offer = unescapeOffer(JSON.parse(JSON.parse(data)[0]));
+                resolve(offer);
+            }, error:function(){
+                reject();
+            }
+        });
+    }).then(function(offer){
+        console.log(offer);
         setTimeout(checkRestart, 1000);
     }).catch(function(reason) {
         console.log("[heatbeat] Signaling reset.");
