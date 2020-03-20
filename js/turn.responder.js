@@ -66,7 +66,7 @@ function callInitiator(conn, api) {
             }
         });
     }).then(function() {
-        return Promise.all([new Promise(function(resolve, reject){
+        return new Promise(function(resolve, reject){
             // Request the candidates of initiator.
             var requestCandidates = function() {
                 $.ajax({
@@ -82,27 +82,33 @@ function callInitiator(conn, api) {
 
                         resolve(data);
                     }, error:function(xhr,err){
-                        reject(err);
+                        setTimeout(requestCandidates, 3000);
                     }
                 });
             };
             requestCandidates();
-        }), new Promise(function(resolve, reject){
-            // Query the offer of initiator from signaling server.
-            $.ajax({
-                type:"GET", async:true, url:api+"/api/webrtc/offer", contentType:"application/json",
-                success:function(data){
-                    var offer = JSON.parse(data);
-                    offer = offer[0];
-                    offer = JSON.parse(offer);
-                    offer = unescapeOffer(offer);
-                    resolve(offer);
-                },
-                error: function(xhr, err) {
-                    reject(err);
-                }
-            });
-        })]);
+        });
+    }).then(function(candidates) {
+        return new Promise(function(resolve, reject){
+            // Request the offer of initiator.
+            var requestOffer = function() {
+                // Query the offer of initiator from signaling server.
+                $.ajax({
+                    type:"GET", async:true, url:api+"/api/webrtc/offer", contentType:"application/json",
+                    success:function(data){
+                        var offer = JSON.parse(data);
+                        offer = offer[0];
+                        offer = JSON.parse(offer);
+                        offer = unescapeOffer(offer);
+                        resolve([candidates, offer]);
+                    },
+                    error: function(xhr, err) {
+                        setTimeout(requestOffer, 3000);
+                    }
+                });
+            };
+            requestOffer();
+        });
     }).then(function([candidates,offer]){
         // once got the peer offer(SDP), we can generate our answer(SDP).
         conn.setRemoteDescription(offer); // trigger conn.onaddstream
