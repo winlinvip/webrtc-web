@@ -27,6 +27,7 @@ var connect = function(){
 
         // Use a peer connection to share stream to responder.
         var conn = new window.webkitRTCPeerConnection({
+            iceTransportPolicy: 'relay',
             iceServers:[{urls:["turn:stun.ossrs.net"], username:"winlin", credential:"12345678"
         }]});
         conn.addStream(stream);
