@@ -167,6 +167,7 @@ function checkRestart() {
         setTimeout(checkRestart, 1000);
     }).catch(function(reason) {
         console.log("[heatbeat] Signaling reset.");
+        window.location.href = window.location.href + '?t=' + new Date().getTime();
     });
 }
 
