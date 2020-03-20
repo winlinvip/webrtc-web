@@ -180,7 +180,10 @@ function checkRestart() {
     }).catch(function(reason) {
         console.error("[heatbeat] Signaling reset.");
         setTimeout(function () {
-            window.location.href = window.location.href + '?t=' + new Date().getTime();
+            var url = window.location.href;
+            var path = window.location.pathname;
+            var url2 = url.substr(0, url.indexOf(path) + path.length);
+            window.location.href = url2 + '?t=' + new Date().getTime();
         }, 1500);
     });
 }
