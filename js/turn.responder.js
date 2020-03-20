@@ -151,10 +151,34 @@ function callInitiator(conn, api) {
             console.log(answer); console.log(answer.sdp);
 
             var data = JSON.stringify(escapeOffer(answer));
-            $.ajax({type:"POST", async:true, url:api+"/api/webrtc/answer", contentType:"application/json", data:data});
+            $.ajax({
+                type:"POST", async:true, url:api+"/api/webrtc/answer", contentType:"application/json", data:data,
+                success:function(data){
+                    checkRestart();
+                }
+            });
         }, function(error){
             console.log(error);
         });
+    });
+}
+
+function checkRestart() {
+    new Promise(function(resolve, reject){
+        $.ajax({
+            type:"GET", async:true, url:api+"/api/webrtc/answer", contentType:"application/json",
+            success:function(data){
+                var answer = unescapeOffer(JSON.parse(JSON.parse(data)[0]));
+                resolve(answer);
+            }, error:function(){
+                reject();
+            }
+        });
+    }).then(function(answer){
+        console.log(answer);
+        setTimeout(checkRestart, 1000);
+    }).catch(function(reason) {
+        console.log("[heatbeat] Signaling reset.");
     });
 }
 
