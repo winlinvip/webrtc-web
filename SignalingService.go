@@ -56,6 +56,12 @@ func main() {
 				}
 			}
 
+			// Ignore for empty content.
+			if content == "nil" || content == "" {
+				fmt.Println("Ignore checking empty content")
+				return
+			}
+
 			values,_ := cache[key]
 			if key == "offer" || key == "answer" {
 				cache[key] = []string { content }
