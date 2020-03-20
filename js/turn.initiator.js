@@ -166,8 +166,10 @@ function checkRestart() {
         console.log(offer);
         setTimeout(checkRestart, 1000);
     }).catch(function(reason) {
-        console.log("[heatbeat] Signaling reset.");
-        window.location.href = window.location.href + '?t=' + new Date().getTime();
+        console.error("[heatbeat] Signaling reset.");
+        setTimeout(function () {
+            window.location.href = window.location.href + '?t=' + new Date().getTime();
+        }, 1500);
     });
 }
 

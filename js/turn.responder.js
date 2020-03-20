@@ -178,7 +178,10 @@ function checkRestart() {
         console.log(answer);
         setTimeout(checkRestart, 1000);
     }).catch(function(reason) {
-        console.log("[heatbeat] Signaling reset.");
+        console.error("[heatbeat] Signaling reset.");
+        setTimeout(function () {
+            window.location.href = window.location.href + '?t=' + new Date().getTime();
+        }, 1500);
     });
 }
 
