@@ -56,43 +56,54 @@ $("#start").click(connect);
 connect();
 
 function callInitiator(conn, api) {
-    Promise.all([new Promise(function(resolve, reject){
-        // Request the candidates of initiator.
-        var requestCandidates = function() {
-            $.ajax({
-                type:"GET", async:true, url:api+"/api/webrtc/icandidates", contentType:"application/json",
-                success:function(data){
-                    data = JSON.parse(data) || [];
+    new Promise(function(resolve, reject){
+        $.ajax({
+            type:"POST", async:true, url:api+"/api/webrtc/answer", contentType:"application/json", data:"",
+            success:function(){
+                resolve();
+            }, error:function(){
+                reject();
+            }
+        });
+    }).then(function() {
+        return Promise.all([new Promise(function(resolve, reject){
+            // Request the candidates of initiator.
+            var requestCandidates = function() {
+                $.ajax({
+                    type:"GET", async:true, url:api+"/api/webrtc/icandidates", contentType:"application/json",
+                    success:function(data){
+                        data = JSON.parse(data) || [];
 
-                    // Wait util the rcandidates are completed, we should got 2+ candidates.
-                    if (data.length < 2) {
-                        setTimeout(requestCandidates, 1000);
-                        return;
+                        // Wait util the rcandidates are completed, we should got 2+ candidates.
+                        if (data.length < 2) {
+                            setTimeout(requestCandidates, 1000);
+                            return;
+                        }
+
+                        resolve(data);
+                    }, error:function(xhr,err){
+                        reject(err);
                     }
-
-                    resolve(data);
-                }, error:function(xhr,err){
+                });
+            };
+            requestCandidates();
+        }), new Promise(function(resolve, reject){
+            // Query the offer of initiator from signaling server.
+            $.ajax({
+                type:"GET", async:true, url:api+"/api/webrtc/offer", contentType:"application/json",
+                success:function(data){
+                    var offer = JSON.parse(data);
+                    offer = offer[0];
+                    offer = JSON.parse(offer);
+                    offer = unescapeOffer(offer);
+                    resolve(offer);
+                },
+                error: function(xhr, err) {
                     reject(err);
                 }
             });
-        };
-        requestCandidates();
-    }), new Promise(function(resolve, reject){
-        // Query the offer of initiator from signaling server.
-        $.ajax({
-            type:"GET", async:true, url:api+"/api/webrtc/offer", contentType:"application/json",
-            success:function(data){
-                var offer = JSON.parse(data);
-                offer = offer[0];
-                offer = JSON.parse(offer);
-                offer = unescapeOffer(offer);
-                resolve(offer);
-            },
-            error: function(xhr, err) {
-                reject(err);
-            }
-        });
-    })]).then(function([candidates,offer]){
+        })]);
+    }).then(function([candidates,offer]){
         // once got the peer offer(SDP), we can generate our answer(SDP).
         conn.setRemoteDescription(offer); // trigger conn.onaddstream
         console.log("[onRemoteGotOffer] Got offer " + offer.sdp.length + "B sdp as bellow:");
