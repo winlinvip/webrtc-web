@@ -42,6 +42,8 @@ var connect = function(){
                 rv.srcObject = e.stream;
             }
             console.log("[conn.onaddstream] rv.src=remoteStream " + rv.src);
+
+            checkRestart();
         };
         return conn;
     }).then(function(conn){
@@ -146,6 +148,29 @@ function waitResponder(pcLocal) {
                 console.log("[requestCandidates] Got responder candidate " + JSON.stringify(candidate));
             }
         });
+    });
+}
+
+function checkRestart() {
+    new Promise(function(resolve, reject){
+        var waitAnswer = function(){
+            $.ajax({
+                type:"GET", async:true, url:api+"/api/webrtc/answer", contentType:"application/json",
+                success:function(data){
+                    var answer = unescapeOffer(JSON.parse(JSON.parse(data)[0]));
+                    resolve(answer);
+                }, error:function(){
+                    console.log("[waitAnswer] No answer, wait for a while.");
+                    setTimeout(waitAnswer, 1000);
+                }
+            });
+        };
+        setTimeout(waitAnswer, 0);
+    }).then(function(answer){
+        console.log(answer);
+        setTimeout(checkRestart, 1000);
+    }).catch(function(reason) {
+        console.error(reason);
     });
 }
 
